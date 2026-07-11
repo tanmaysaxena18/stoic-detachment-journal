@@ -19,6 +19,9 @@ export default function ShieldChamber({ logs, onAddLog, onClearLogs, scenarios }
   // Latest audit result display
   const [latestScore, setLatestScore] = useState<number | null>(null);
   const [latestAnalysis, setLatestAnalysis] = useState("");
+  const [latestAnalysisHinglish, setLatestAnalysisHinglish] = useState("");
+  const [latestAnalysisHindi, setLatestAnalysisHindi] = useState("");
+  const [shieldActiveLang, setShieldActiveLang] = useState<"en" | "hinglish" | "hi">("en");
   const [completedAudit, setCompletedAudit] = useState(false);
 
   const activeScenario = scenarios[selectedScenarioIdx] || scenarios[0];
@@ -50,9 +53,11 @@ export default function ShieldChamber({ logs, onAddLog, onClearLogs, scenarios }
 
       const result = await res.json();
       if (result.success) {
-        const { detachmentScore, analysis } = result.data;
+        const { detachmentScore, analysis, analysisHinglish, analysisHindi } = result.data;
         setLatestScore(detachmentScore);
         setLatestAnalysis(analysis);
+        setLatestAnalysisHinglish(analysisHinglish || "");
+        setLatestAnalysisHindi(analysisHindi || "");
         setCompletedAudit(true);
 
         // Add to permanent local logs
@@ -63,6 +68,8 @@ export default function ShieldChamber({ logs, onAddLog, onClearLogs, scenarios }
           userResponse: userResponse,
           detachmentScore: detachmentScore,
           analysis: analysis,
+          analysisHinglish: analysisHinglish,
+          analysisHindi: analysisHindi,
           timestamp: new Date().toISOString(),
         };
         onAddLog(newLog);
@@ -250,12 +257,42 @@ export default function ShieldChamber({ logs, onAddLog, onClearLogs, scenarios }
 
             {/* Deep Critique */}
             <div className="space-y-2">
-              <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-wider block">
-                Clinical Critique & Stoic Counsel
-              </span>
-              <p className="text-zinc-300 text-xs leading-relaxed text-justify font-sans font-light">
-                {latestAnalysis}
-              </p>
+              <div className="flex items-center justify-between border-b border-zinc-900 pb-1.5">
+                <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-wider block">
+                  Clinical Critique & Stoic Counsel
+                </span>
+                <div className="flex gap-1 bg-zinc-950 border border-zinc-800 rounded-lg p-0.5">
+                  {(["en", "hinglish", "hi"] as const).map((lang) => (
+                    <button
+                      key={lang}
+                      type="button"
+                      onClick={() => setShieldActiveLang(lang)}
+                      className={`px-2 py-0.5 text-[8px] font-mono rounded transition capitalize ${
+                        shieldActiveLang === lang
+                          ? "bg-zinc-850 text-zinc-100"
+                          : "text-zinc-500 hover:text-zinc-300"
+                      }`}
+                    >
+                      {lang === "en" ? "English" : lang === "hinglish" ? "Hinglish" : "Hindi"}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              {shieldActiveLang === "en" && (
+                <p className="text-zinc-300 text-xs leading-relaxed text-justify font-sans font-light">
+                  {latestAnalysis}
+                </p>
+              )}
+              {shieldActiveLang === "hinglish" && (
+                <p className="text-zinc-300 text-xs leading-relaxed text-justify font-sans font-light">
+                  {latestAnalysisHinglish || "No Hinglish critique generated."}
+                </p>
+              )}
+              {shieldActiveLang === "hi" && (
+                <p className="text-zinc-300 text-xs leading-relaxed text-justify font-sans font-light font-hindi">
+                  {latestAnalysisHindi || "No Hindi critique generated."}
+                </p>
+              )}
             </div>
           </motion.div>
         )}
@@ -298,15 +335,37 @@ export default function ShieldChamber({ logs, onAddLog, onClearLogs, scenarios }
                   </span>
                 </div>
 
-                <p className="text-[11px] font-sans text-zinc-300 line-clamp-2">
+                <p className="text-[11px] font-sans text-zinc-300">
                   <strong className="text-zinc-400 font-mono uppercase text-[9px] tracking-wider block mb-0.5">Shock Parameter:</strong>
                   {log.scenarioText}
                 </p>
 
-                <p className="text-[11px] font-mono text-zinc-500 line-clamp-2 italic">
+                <p className="text-[11px] font-mono text-zinc-500 italic">
                   <strong className="text-zinc-400 font-mono uppercase text-[9px] tracking-wider block mb-0.5">Your Response Plan:</strong>
                   "{log.userResponse}"
                 </p>
+
+                <div className="text-[11px] font-sans text-zinc-400 pt-2 border-t border-zinc-900 space-y-1">
+                  <strong className="text-zinc-400 font-mono uppercase text-[9px] tracking-wider block mb-1">Critique & Counsel:</strong>
+                  <div className="pl-2 border-l border-zinc-800 space-y-1.5">
+                    <div>
+                      <span className="text-[8px] font-mono text-zinc-600 uppercase tracking-wider block">English:</span>
+                      <p className="text-zinc-300 leading-relaxed text-justify text-[10px]">{log.analysis}</p>
+                    </div>
+                    {log.analysisHinglish && (
+                      <div>
+                        <span className="text-[8px] font-mono text-zinc-600 uppercase tracking-wider block">Hinglish:</span>
+                        <p className="text-zinc-300 leading-relaxed text-justify text-[10px]">{log.analysisHinglish}</p>
+                      </div>
+                    )}
+                    {log.analysisHindi && (
+                      <div>
+                        <span className="text-[8px] font-mono text-zinc-600 uppercase tracking-wider block font-hindi">Hindi (हिंदी):</span>
+                        <p className="text-zinc-300 leading-relaxed text-justify text-[10px] font-hindi">{log.analysisHindi}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
             ))}
 
