@@ -23,6 +23,8 @@ export interface Post {
   category: Pillar;
   quote: string;
   reflection: string;
+  reflectionHinglish?: string;
+  reflectionHindi?: string;
   tags: string[];
   dateCreated: string;
   status: "Draft" | "Published" | "Scheduled";
@@ -33,6 +35,8 @@ export interface DialogueItem {
   id: string;
   external: string;
   internal: string;
+  internalHinglish?: string;
+  internalHindi?: string;
   timestamp: string;
 }
 
@@ -49,5 +53,7 @@ export interface ShieldLog {
   userResponse: string;
   detachmentScore: number; // 0 to 100
   analysis: string;
+  analysisHinglish?: string;
+  analysisHindi?: string;
   timestamp: string;
 }
