@@ -39,8 +39,11 @@ export default function CuratorWorkspace({
   // Output states (editable after generation)
   const [generatedQuote, setGeneratedQuote] = useState("");
   const [generatedReflection, setGeneratedReflection] = useState("");
+  const [generatedReflectionHinglish, setGeneratedReflectionHinglish] = useState("");
+  const [generatedReflectionHindi, setGeneratedReflectionHindi] = useState("");
   const [generatedTags, setGeneratedTags] = useState<string[]>([]);
   const [hasGenerated, setHasGenerated] = useState(false);
+  const [activeLang, setActiveLang] = useState<"en" | "hinglish" | "hi">("en");
   const [saveStatus, setSaveStatus] = useState<"Draft" | "Published" | "Scheduled">("Draft");
   const [scheduledDate, setScheduledDate] = useState("");
 
@@ -114,9 +117,11 @@ export default function CuratorWorkspace({
 
       const result = await response.json();
       if (result.success) {
-        setGeneratedQuote(result.data.quote);
-        setGeneratedReflection(result.data.reflection);
-        setGeneratedTags(result.data.tags);
+        setGeneratedQuote(result.data.quote || "");
+        setGeneratedReflection(result.data.reflection || "");
+        setGeneratedReflectionHinglish(result.data.reflectionHinglish || "");
+        setGeneratedReflectionHindi(result.data.reflectionHindi || "");
+        setGeneratedTags(result.data.tags || []);
         setHasGenerated(true);
       } else {
         throw new Error("Failed to receive structured stoic content.");
@@ -139,8 +144,14 @@ The Quote:
 
 "${quoteToUse}"
 
-The Reflection:
+The Reflection (English):
 ${generatedReflection}
+
+The Reflection (Hinglish):
+${generatedReflectionHinglish}
+
+The Reflection (Hindi):
+${generatedReflectionHindi}
 
 Tags: ${generatedTags.map(t => t.startsWith("#") ? t : `#${t}`).join(" ")}`;
   };
@@ -170,6 +181,8 @@ Tags: ${generatedTags.map(t => t.startsWith("#") ? t : `#${t}`).join(" ")}`;
       category: selectedCategory,
       quote: quoteSource === "ai" ? generatedQuote : customQuote,
       reflection: generatedReflection,
+      reflectionHinglish: generatedReflectionHinglish,
+      reflectionHindi: generatedReflectionHindi,
       tags: generatedTags,
       dateCreated: new Date().toISOString(),
       status: saveStatus,
@@ -383,14 +396,56 @@ Tags: ${generatedTags.map(t => t.startsWith("#") ? t : `#${t}`).join(" ")}`;
 
               {/* Editable Reflection commentary */}
               <div className="space-y-1.5">
-                <label className="text-[10px] font-mono uppercase tracking-wider text-zinc-500">Philosophical Reflection (Commentary)</label>
-                <textarea
-                  id="edit-generated-reflection"
-                  rows={4}
-                  value={generatedReflection}
-                  onChange={(e) => setGeneratedReflection(e.target.value)}
-                  className="w-full bg-zinc-950 border border-zinc-800 rounded-xl p-3.5 text-xs text-zinc-100 focus:outline-none focus:border-zinc-700 transition resize-none"
-                />
+                <div className="flex items-center justify-between">
+                  <label className="text-[10px] font-mono uppercase tracking-wider text-zinc-500">Philosophical Reflection (Commentary)</label>
+                  <div className="flex gap-1 bg-zinc-950 border border-zinc-800 rounded-lg p-0.5">
+                    {(["en", "hinglish", "hi"] as const).map((lang) => (
+                      <button
+                        key={lang}
+                        type="button"
+                        onClick={() => setActiveLang(lang)}
+                        className={`px-2 py-0.5 text-[9px] font-mono rounded transition capitalize ${
+                          activeLang === lang
+                            ? "bg-zinc-800 text-zinc-100"
+                            : "text-zinc-500 hover:text-zinc-300"
+                        }`}
+                      >
+                        {lang === "en" ? "English" : lang === "hinglish" ? "Hinglish" : "Hindi"}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {activeLang === "en" && (
+                  <textarea
+                    id="edit-generated-reflection"
+                    rows={4}
+                    value={generatedReflection}
+                    onChange={(e) => setGeneratedReflection(e.target.value)}
+                    className="w-full bg-zinc-950 border border-zinc-800 rounded-xl p-3.5 text-xs text-zinc-100 focus:outline-none focus:border-zinc-700 transition resize-none"
+                    placeholder="Clinical English reflection..."
+                  />
+                )}
+                {activeLang === "hinglish" && (
+                  <textarea
+                    id="edit-generated-reflection-hinglish"
+                    rows={4}
+                    value={generatedReflectionHinglish}
+                    onChange={(e) => setGeneratedReflectionHinglish(e.target.value)}
+                    className="w-full bg-zinc-950 border border-zinc-800 rounded-xl p-3.5 text-xs text-zinc-100 focus:outline-none focus:border-zinc-700 transition resize-none"
+                    placeholder="Sharp Hinglish (Hindi in English letters) reflection..."
+                  />
+                )}
+                {activeLang === "hi" && (
+                  <textarea
+                    id="edit-generated-reflection-hindi"
+                    rows={4}
+                    value={generatedReflectionHindi}
+                    onChange={(e) => setGeneratedReflectionHindi(e.target.value)}
+                    className="w-full bg-zinc-950 border border-zinc-800 rounded-xl p-3.5 text-xs text-zinc-100 focus:outline-none focus:border-zinc-700 transition resize-none"
+                    placeholder="Deep Devanagari Hindi reflection..."
+                  />
+                )}
                 <span className="text-[9px] font-mono text-zinc-500 block pt-0.5 uppercase tracking-wide">
                   // Keep reflection strictly between 2 to 4 sentences of high impact.
                 </span>
@@ -514,12 +569,26 @@ Tags: ${generatedTags.map(t => t.startsWith("#") ? t : `#${t}`).join(" ")}`;
 
                   {/* The Reflection Commentary */}
                   <div className="pt-4 border-t border-zinc-800 space-y-2">
-                    <span className="text-[9px] font-mono uppercase tracking-[0.2em] text-zinc-500 block">
-                      The Reflection / Core Commentary
-                    </span>
-                    <p className="text-zinc-400 text-sm font-sans font-light leading-relaxed text-justify max-w-xl">
-                      {generatedReflection}
-                    </p>
+                    <div className="flex items-center justify-between">
+                      <span className="text-[9px] font-mono uppercase tracking-[0.2em] text-zinc-500 block">
+                        The Reflection ({activeLang === "en" ? "English" : activeLang === "hinglish" ? "Hinglish" : "Hindi"})
+                      </span>
+                    </div>
+                    {activeLang === "en" && (
+                      <p className="text-zinc-400 text-sm font-sans font-light leading-relaxed text-justify max-w-xl">
+                        {generatedReflection}
+                      </p>
+                    )}
+                    {activeLang === "hinglish" && (
+                      <p className="text-zinc-300 text-sm font-sans font-light leading-relaxed text-justify max-w-xl">
+                        {generatedReflectionHinglish || "Generar Hinglish response..."}
+                      </p>
+                    )}
+                    {activeLang === "hi" && (
+                      <p className="text-zinc-300 text-sm font-sans font-light leading-relaxed text-justify max-w-xl">
+                        {generatedReflectionHindi || "Generar Hindi response..."}
+                      </p>
+                    )}
                   </div>
 
                   {/* Tags */}
