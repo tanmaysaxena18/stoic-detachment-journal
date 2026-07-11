@@ -61,12 +61,16 @@ export default function DialogueStudio({ dialogues, onAddDialogue, onClearDialog
       const result = await res.json();
       if (result.success) {
         const generatedInternal = result.data.internal;
+        const generatedInternalHinglish = result.data.internalHinglish;
+        const generatedInternalHindi = result.data.internalHindi;
         setLatestInternal(generatedInternal);
 
         const newItem: DialogueItem = {
           id: `dialogue-${Date.now()}`,
           external: externalPrompt,
           internal: generatedInternal,
+          internalHinglish: generatedInternalHinglish,
+          internalHindi: generatedInternalHindi,
           timestamp: new Date().toISOString(),
         };
         onAddDialogue(newItem);
@@ -209,9 +213,23 @@ export default function DialogueStudio({ dialogues, onAddDialogue, onClearDialog
                       <span>"{item.external}"</span>
                     </div>
 
-                    <div className="text-xs font-serif font-light text-zinc-200 border-l border-zinc-800 pl-3 leading-relaxed flex gap-1.5 items-start">
-                      <span className="text-zinc-500 font-mono uppercase tracking-wider text-[9px] select-none shrink-0 mt-0.5">Internal:</span>
-                      <span>"{item.internal}"</span>
+                    <div className="text-xs font-serif font-light text-zinc-200 border-l border-zinc-800 pl-3 leading-relaxed flex flex-col gap-1.5 pt-0.5">
+                      <div className="flex gap-1.5 items-start">
+                        <span className="text-zinc-500 font-mono uppercase tracking-wider text-[8px] select-none shrink-0 mt-0.5">EN:</span>
+                        <span>"{item.internal}"</span>
+                      </div>
+                      {item.internalHinglish && (
+                        <div className="flex gap-1.5 items-start text-zinc-300">
+                          <span className="text-zinc-500 font-mono uppercase tracking-wider text-[8px] select-none shrink-0 mt-0.5">Hinglish:</span>
+                          <span>"{item.internalHinglish}"</span>
+                        </div>
+                      )}
+                      {item.internalHindi && (
+                        <div className="flex gap-1.5 items-start text-zinc-300">
+                          <span className="text-zinc-500 font-mono uppercase tracking-wider text-[8px] select-none shrink-0 mt-0.5">Hindi:</span>
+                          <span>"{item.internalHindi}"</span>
+                        </div>
+                      )}
                     </div>
                   </div>
 
@@ -219,7 +237,12 @@ export default function DialogueStudio({ dialogues, onAddDialogue, onClearDialog
                     <span>{new Date(item.timestamp).toLocaleTimeString()}</span>
 
                     <button
-                      onClick={() => copyDialogue(item.id, `External: "${item.external}"\nInternal: "${item.internal}"`)}
+                      onClick={() => {
+                        const copyText = `External: "${item.external}"\nInternal (EN): "${item.internal}"` + 
+                          (item.internalHinglish ? `\nInternal (Hinglish): "${item.internalHinglish}"` : "") +
+                          (item.internalHindi ? `\nInternal (Hindi): "${item.internalHindi}"` : "");
+                        copyDialogue(item.id, copyText);
+                      }}
                       className="text-zinc-500 hover:text-zinc-300 transition flex items-center gap-1 uppercase tracking-wider"
                     >
                       {copiedId === item.id ? (
