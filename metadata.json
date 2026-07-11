@@ -1,0 +1,6 @@
+{
+  "name": "The Architecture of Detachment",
+  "description": "A modern stoic curation engine and content planner for reflective, analytical wisdom, psychological insight, and solitude.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
