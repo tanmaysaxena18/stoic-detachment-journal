@@ -7,7 +7,7 @@ import { createServer as createViteServer } from "vite";
 dotenv.config();
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
 
 app.use(express.json());
 
@@ -48,7 +48,9 @@ app.post("/api/generate-post", async (req, res) => {
 
 Generate:
 1. Reflection: A brief 2 to 4 sentence deep, clinical, and analytical philosophical breakdown. Explain the harsh truth or strategic advantage hidden within it. Do not use emojis.
-2. Tags: 3 to 5 relevant lowercase hashtags representing core stoic models or psychological principles (e.g., #detachment, #vulnerability-audit, #social-variables).`;
+2. ReflectionHinglish: Translate/adapt this exact reflection into high-quality conversational Hinglish (Hindi written in Roman script / Latin alphabets) that captures the same sharp, stoic, and deep meaning in a highly relatable, simple, and direct way. Keep it clinical and sharp.
+3. ReflectionHindi: Translate/adapt this exact reflection into beautiful, profound, and formal Hindi written in Devanagari script.
+4. Tags: 3 to 5 relevant lowercase hashtags representing core stoic models or psychological principles (e.g., #detachment, #vulnerability-audit, #social-variables).`;
 
     const result = await ai.models.generateContent({
       model: "gemini-3.5-flash",
@@ -64,13 +66,21 @@ Generate:
               type: Type.STRING,
               description: "A 2 to 4 sentence clinical, analytical, and stoic reflection of the quote. Strictly 2 to 4 sentences."
             },
+            reflectionHinglish: {
+              type: Type.STRING,
+              description: "The reflection translated/adapted into highly natural conversational Hinglish (Hindi written in Roman/English characters)."
+            },
+            reflectionHindi: {
+              type: Type.STRING,
+              description: "The reflection translated/adapted into deep, formal Hindi written in Devanagari script."
+            },
             tags: {
               type: Type.ARRAY,
               items: { type: Type.STRING },
               description: "3 to 5 relevant lowercase hashtag tags."
             }
           },
-          required: ["reflection", "tags"]
+          required: ["reflection", "reflectionHinglish", "reflectionHindi", "tags"]
         }
       }
     });
@@ -82,6 +92,8 @@ Generate:
         quote,
         category,
         reflection: parsed.reflection,
+        reflectionHinglish: parsed.reflectionHinglish,
+        reflectionHindi: parsed.reflectionHindi,
         tags: parsed.tags || []
       }
     });
@@ -107,7 +119,9 @@ The quote must perfectly mimic the analytical, clinical, and stoic style of "The
 
 Also generate:
 1. Reflection: A brief 2 to 4 sentence deep, clinical commentary explaining the harsh truth or strategic utility hidden in this new quote.
-2. Tags: 3 to 5 relevant lowercase hashtags.`;
+2. ReflectionHinglish: Translate/adapt this exact reflection into high-quality conversational Hinglish (Hindi written in Roman script / Latin alphabets) that captures the same sharp, stoic, and deep meaning in a highly relatable, simple, and direct way.
+3. ReflectionHindi: Translate/adapt this exact reflection into beautiful, profound, and formal Hindi written in Devanagari script.
+4. Tags: 3 to 5 relevant lowercase hashtags.`;
 
     const result = await ai.models.generateContent({
       model: "gemini-3.5-flash",
@@ -127,13 +141,21 @@ Also generate:
               type: Type.STRING,
               description: "A 2 to 4 sentence clinical, analytical, and stoic reflection of the quote. Strictly 2 to 4 sentences."
             },
+            reflectionHinglish: {
+              type: Type.STRING,
+              description: "The reflection translated/adapted into highly natural conversational Hinglish (Hindi written in Roman/English characters)."
+            },
+            reflectionHindi: {
+              type: Type.STRING,
+              description: "The reflection translated/adapted into deep, formal Hindi written in Devanagari script."
+            },
             tags: {
               type: Type.ARRAY,
               items: { type: Type.STRING },
               description: "3 to 5 relevant lowercase hashtag tags."
             }
           },
-          required: ["quote", "reflection", "tags"]
+          required: ["quote", "reflection", "reflectionHinglish", "reflectionHindi", "tags"]
         }
       }
     });
@@ -145,6 +167,8 @@ Also generate:
         quote: parsed.quote,
         category,
         reflection: parsed.reflection,
+        reflectionHinglish: parsed.reflectionHinglish,
+        reflectionHindi: parsed.reflectionHindi,
         tags: parsed.tags || []
       }
     });
@@ -168,11 +192,16 @@ app.post("/api/dialogue-mask", async (req, res) => {
     const userPrompt = `Read the following external statement or question:
 "${external}"
 
-Generate a sharp, profound, and clinical "Internal Reality" response. It must expose the transaction, the fragility, or the rational perspective behind the external prompt. Mimic the style of:
+Generate a sharp, profound, and clinical "Internal Reality" response in English. It must expose the transaction, the fragility, or the rational perspective behind the external prompt. Mimic the style of:
 - "Why are you so serious?" -> "Me: Wasn't she serious back then when she said, 'You'll regret it'?"
 - "Someone asks: Why are you so silent?" -> "When did you ever see a tsunami coming from turbulent waters?"
 
-Respond directly with the text representing the internal reflection. Do not include introductory or concluding remarks. Make it start with "Me: " or a direct philosophical thought. Keep it to 1-2 short sentences.`;
+Also generate:
+1. Internal: The primary response in English.
+2. InternalHinglish: The response in highly natural, sharp conversational Hinglish.
+3. InternalHindi: The response in profound Devanagari Hindi.
+
+Do not include introductory or concluding remarks. Make it start with "Me: " or a direct philosophical thought. Keep it to 1-2 short sentences.`;
 
     const result = await ai.models.generateContent({
       model: "gemini-3.5-flash",
@@ -186,10 +215,18 @@ Respond directly with the text representing the internal reflection. Do not incl
           properties: {
             internal: {
               type: Type.STRING,
-              description: "The clinical and profound 'Internal Reality' response."
+              description: "The clinical and profound 'Internal Reality' response in English."
+            },
+            internalHinglish: {
+              type: Type.STRING,
+              description: "The response in highly natural conversational Hinglish."
+            },
+            internalHindi: {
+              type: Type.STRING,
+              description: "The response in profound Devanagari Hindi."
             }
           },
-          required: ["internal"]
+          required: ["internal", "internalHinglish", "internalHindi"]
         }
       }
     });
@@ -199,7 +236,9 @@ Respond directly with the text representing the internal reflection. Do not incl
       success: true,
       data: {
         external,
-        internal: parsed.internal
+        internal: parsed.internal,
+        internalHinglish: parsed.internalHinglish,
+        internalHindi: parsed.internalHindi
       }
     });
   } catch (error: any) {
@@ -227,7 +266,9 @@ Tasks:
 1. Calculate a "Detachment Score" (integer from 0 to 100).
    - 100: Absolute stoicism, complete insulation from external opinions, impeccable logical analysis of variables, zero panic.
    - 0: Total emotional surrender, frantic external validation-seeking, self-pity, revenge obsession.
-2. Provide a 3-4 sentence clinical critique. Highlight the vulnerability vectors or the logical strengths in their response. Offer clear, actionable advice on how they can upgrade their Inner Shield to insulate their mental focus from such external variables.`;
+2. Provide a 3-4 sentence clinical critique in English. Highlight the vulnerability vectors or the logical strengths in their response. Offer clear, actionable advice on how they can upgrade their Inner Shield to insulate their mental focus from such external variables.
+3. Provide the same critique translated/adapted into highly natural, conversational Hinglish (Hindi written in Roman script/Latin characters).
+4. Provide the same critique translated/adapted into profound, formal Hindi written in Devanagari script.`;
 
     const result = await ai.models.generateContent({
       model: "gemini-3.5-flash",
@@ -245,10 +286,18 @@ Tasks:
             },
             analysis: {
               type: Type.STRING,
-              description: "A clinical and psychological stoic critique of the response with sharp, constructive detachment advice."
+              description: "A clinical and psychological stoic critique of the response with sharp, constructive detachment advice in English."
+            },
+            analysisHinglish: {
+              type: Type.STRING,
+              description: "The critique translated/adapted into natural conversational Hinglish (Hindi in Roman script)."
+            },
+            analysisHindi: {
+              type: Type.STRING,
+              description: "The critique translated/adapted into profound, formal Hindi (Devanagari script)."
             }
           },
-          required: ["detachmentScore", "analysis"]
+          required: ["detachmentScore", "analysis", "analysisHinglish", "analysisHindi"]
         }
       }
     });
@@ -258,7 +307,9 @@ Tasks:
       success: true,
       data: {
         detachmentScore: Number(parsed.detachmentScore),
-        analysis: parsed.analysis
+        analysis: parsed.analysis,
+        analysisHinglish: parsed.analysisHinglish,
+        analysisHindi: parsed.analysisHindi
       }
     });
   } catch (error: any) {
