@@ -207,7 +207,11 @@ export default function App() {
             transition={{ duration: 0.15 }}
           >
             {activeTab === "vault" && (
-              <AphorismVault onSelectQuote={handleSelectQuoteForCurator} quotes={quotes} />
+              <AphorismVault
+                onSelectQuote={handleSelectQuoteForCurator}
+                quotes={quotes}
+                onAddQuote={handleAddQuote}
+              />
             )}
 
             {activeTab === "curator" && (
@@ -281,4 +285,3 @@ export default function App() {
     </div>
   );
 }
-
