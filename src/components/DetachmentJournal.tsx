@@ -14,8 +14,11 @@ export default function DetachmentJournal({ posts, onDeletePost, onUpdatePost }:
   const [filter, setFilter] = useState<"All" | "Draft" | "Published" | "Scheduled">("All");
   const [editingPostId, setEditingPostId] = useState<string | null>(null);
   const [editReflection, setEditReflection] = useState("");
+  const [editReflectionHinglish, setEditReflectionHinglish] = useState("");
+  const [editReflectionHindi, setEditReflectionHindi] = useState("");
   const [editTags, setEditTags] = useState("");
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [postLangs, setPostLangs] = useState<Record<string, "en" | "hinglish" | "hi">>({});
 
   const filteredPosts = posts.filter((post) => {
     if (filter === "All") return true;
@@ -25,6 +28,8 @@ export default function DetachmentJournal({ posts, onDeletePost, onUpdatePost }:
   const handleStartEdit = (post: Post) => {
     setEditingPostId(post.id);
     setEditReflection(post.reflection);
+    setEditReflectionHinglish(post.reflectionHinglish || "");
+    setEditReflectionHindi(post.reflectionHindi || "");
     setEditTags(post.tags.join(", "));
   };
 
@@ -32,6 +37,8 @@ export default function DetachmentJournal({ posts, onDeletePost, onUpdatePost }:
     const updated: Post = {
       ...post,
       reflection: editReflection,
+      reflectionHinglish: editReflectionHinglish,
+      reflectionHindi: editReflectionHindi,
       tags: editTags.split(",").map((t) => t.trim()).filter(Boolean),
     };
     onUpdatePost(updated);
@@ -46,8 +53,14 @@ The Quote:
 
 "${post.quote}"
 
-The Reflection:
+The Reflection (English):
 ${post.reflection}
+
+The Reflection (Hinglish):
+${post.reflectionHinglish || ""}
+
+The Reflection (Hindi):
+${post.reflectionHindi || ""}
 
 Tags: ${post.tags.map(t => t.startsWith("#") ? t : `#${t}`).join(" ")}`;
 
@@ -207,11 +220,29 @@ Tags: ${post.tags.map(t => t.startsWith("#") ? t : `#${t}`).join(" ")}`;
                   {isEditing ? (
                     <div className="space-y-3 bg-zinc-950 p-4 rounded-xl border border-zinc-800">
                       <div className="space-y-1">
-                        <label className="text-[10px] font-mono uppercase tracking-wider text-zinc-500 block">Edit Reflection</label>
+                        <label className="text-[10px] font-mono uppercase tracking-wider text-zinc-500 block">Edit Reflection (English)</label>
                         <textarea
                           rows={3}
                           value={editReflection}
                           onChange={(e) => setEditReflection(e.target.value)}
+                          className="w-full bg-zinc-900 border border-zinc-800 rounded-lg p-2.5 text-xs text-zinc-100 focus:outline-none"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-mono uppercase tracking-wider text-zinc-500 block">Edit Reflection (Hinglish)</label>
+                        <textarea
+                          rows={3}
+                          value={editReflectionHinglish}
+                          onChange={(e) => setEditReflectionHinglish(e.target.value)}
+                          className="w-full bg-zinc-900 border border-zinc-800 rounded-lg p-2.5 text-xs text-zinc-100 focus:outline-none"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-mono uppercase tracking-wider text-zinc-500 block">Edit Reflection (Hindi - Devanagari)</label>
+                        <textarea
+                          rows={3}
+                          value={editReflectionHindi}
+                          onChange={(e) => setEditReflectionHindi(e.target.value)}
                           className="w-full bg-zinc-900 border border-zinc-800 rounded-lg p-2.5 text-xs text-zinc-100 focus:outline-none"
                         />
                       </div>
@@ -241,9 +272,45 @@ Tags: ${post.tags.map(t => t.startsWith("#") ? t : `#${t}`).join(" ")}`;
                     </div>
                   ) : (
                     <div className="space-y-4">
-                      <p className="text-zinc-400 text-xs font-sans font-light leading-relaxed text-justify">
-                        {post.reflection}
-                      </p>
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between border-b border-zinc-950 pb-1">
+                          <span className="text-[9px] font-mono uppercase tracking-wider text-zinc-500">
+                            Core Commentary ({ (postLangs[post.id] || "en") === "en" ? "English" : (postLangs[post.id] || "en") === "hinglish" ? "Hinglish" : "Hindi" })
+                          </span>
+                          <div className="flex gap-1 bg-zinc-950 border border-zinc-850 rounded p-0.5">
+                            {(["en", "hinglish", "hi"] as const).map((lang) => (
+                              <button
+                                key={lang}
+                                type="button"
+                                onClick={() => setPostLangs(prev => ({ ...prev, [post.id]: lang }))}
+                                className={`px-2 py-0.5 text-[8px] font-mono rounded transition capitalize ${
+                                  (postLangs[post.id] || "en") === lang
+                                    ? "bg-zinc-800 text-zinc-100"
+                                    : "text-zinc-500 hover:text-zinc-300"
+                                }`}
+                              >
+                                {lang === "en" ? "EN" : lang === "hinglish" ? "Hinglish" : "Hindi"}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+                        {(postLangs[post.id] || "en") === "en" && (
+                          <p className="text-zinc-400 text-xs font-sans font-light leading-relaxed text-justify">
+                            {post.reflection}
+                          </p>
+                        )}
+                        {(postLangs[post.id] || "en") === "hinglish" && (
+                          <p className="text-zinc-300 text-xs font-sans font-light leading-relaxed text-justify">
+                            {post.reflectionHinglish || "No Hinglish translation saved for this entry."}
+                          </p>
+                        )}
+                        {(postLangs[post.id] || "en") === "hi" && (
+                          <p className="text-zinc-300 text-xs font-sans font-light leading-relaxed text-justify font-hindi">
+                            {post.reflectionHindi || "No Hindi translation saved for this entry."}
+                          </p>
+                        )}
+                      </div>
 
                       {/* Rendered Tags */}
                       <div className="flex flex-wrap gap-1.5">
