@@ -7,6 +7,7 @@ This application is built with a **full-stack architecture** utilizing **React 1
 ---
 
 ## 🔗 Quick Access
+* **Live Production App (Railway)**: [https://stoic-detachment-journal-production.up.railway.app/](https://stoic-detachment-journal-production.up.railway.app/)
 * **AI Studio Project Workspace**: [View App on Google AI Studio](https://ai.studio/apps/e1a7db59-2086-4901-84c1-100b9987558a)
 * **Development Preview URL**: [https://ais-dev-bz2yhgdjryf4bbirbevtr7-424098399161.asia-southeast1.run.app](https://ais-dev-bz2yhgdjryf4bbirbevtr7-424098399161.asia-southeast1.run.app)
 * **Shared Sandbox URL**: [https://ais-pre-bz2yhgdjryf4bbirbevtr7-424098399161.asia-southeast1.run.app](https://ais-pre-bz2yhgdjryf4bbirbevtr7-424098399161.asia-southeast1.run.app)
