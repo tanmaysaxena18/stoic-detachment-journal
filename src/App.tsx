@@ -2,7 +2,6 @@
  * @license
  * SPDX-License-Identifier: Apache-2.0
  */
-
 import React, { useState, useEffect } from "react";
 import Header from "./components/Header";
 import AphorismVault from "./components/AphorismVault";
@@ -146,6 +145,12 @@ export default function App() {
     localStorage.setItem("detachment_quotes", JSON.stringify(updated));
   };
 
+  const handleAddQuotes = (newQuotes: Quote[]) => {
+    const updated = [...quotes, ...newQuotes];
+    setQuotes(updated);
+    localStorage.setItem("detachment_quotes", JSON.stringify(updated));
+  };
+
   const handleDeleteQuote = (id: string) => {
     const updated = quotes.filter((q) => q.id !== id);
     setQuotes(updated);
@@ -210,7 +215,10 @@ export default function App() {
               <AphorismVault
                 onSelectQuote={handleSelectQuoteForCurator}
                 quotes={quotes}
+                savedPosts={savedPosts}
                 onAddQuote={handleAddQuote}
+                onAddQuotes={handleAddQuotes}
+                onNavigateToCurator={() => setActiveTab("curator")}
               />
             )}
 
@@ -253,6 +261,7 @@ export default function App() {
               <AdminControls
                 quotes={quotes}
                 onAddQuote={handleAddQuote}
+                onAddQuotes={handleAddQuotes}
                 onDeleteQuote={handleDeleteQuote}
                 onUpdateQuote={handleUpdateQuote}
                 scenarios={scenarios}
@@ -285,3 +294,4 @@ export default function App() {
     </div>
   );
 }
+
