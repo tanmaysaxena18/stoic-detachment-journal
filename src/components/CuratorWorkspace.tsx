@@ -50,7 +50,7 @@ export default function CuratorWorkspace({
   const [copiedMarkdown, setCopiedMarkdown] = useState(false);
   const [savedSuccess, setSavedSuccess] = useState(false);
 
-  // Sync state if selected from vault
+  // Sync state if selected from vault or quotes update
   React.useEffect(() => {
     if (selectedQuoteText) {
       setQuoteSource("custom");
@@ -58,8 +58,30 @@ export default function CuratorWorkspace({
       if (selectedQuoteCategory) {
         setSelectedCategory(selectedQuoteCategory);
       }
+    } else if (quotes && quotes.length > 0) {
+      const currentValid = quotes.find((q) => q.id === selectedPresetId);
+      if (!currentValid) {
+        setSelectedPresetId(quotes[0].id);
+        if (quoteSource === "preset") {
+          setCustomQuote(quotes[0].text);
+          setSelectedCategory(quotes[0].category);
+        }
+      }
     }
-  }, [selectedQuoteText, selectedQuoteCategory]);
+  }, [selectedQuoteText, selectedQuoteCategory, quotes]);
+
+  const handleSelectSource = (source: "preset" | "custom" | "ai") => {
+    setQuoteSource(source);
+    setError(null);
+    if (source === "preset") {
+      const found = quotes.find((q) => q.id === selectedPresetId) || quotes[0];
+      if (found) {
+        setSelectedPresetId(found.id);
+        setCustomQuote(found.text);
+        setSelectedCategory(found.category);
+      }
+    }
+  };
 
   const handlePresetChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const id = e.target.value;
@@ -189,6 +211,7 @@ Tags: ${generatedTags.map(t => t.startsWith("#") ? t : `#${t}`).join(" ")}`;
       scheduledDate: saveStatus === "Scheduled" ? scheduledDate : undefined,
     };
     onPostSaved(post);
+    clearSelection();
     setSavedSuccess(true);
     setTimeout(() => setSavedSuccess(false), 3000);
   };
@@ -221,10 +244,7 @@ Tags: ${generatedTags.map(t => t.startsWith("#") ? t : `#${t}`).join(" ")}`;
                 <button
                   key={source}
                   type="button"
-                  onClick={() => {
-                    setQuoteSource(source);
-                    setError(null);
-                  }}
+                  onClick={() => handleSelectSource(source)}
                   className={`py-1.5 text-[10px] font-mono font-medium rounded-md transition capitalize ${
                     quoteSource === source
                       ? "bg-zinc-800 text-zinc-100"
