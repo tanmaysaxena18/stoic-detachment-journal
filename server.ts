@@ -248,6 +248,89 @@ Do not include introductory or concluding remarks. Make it start with "Me: " or 
 });
 
 // 4. Stoic Shield Exercise: Evaluate response detachment score and provide critique
+app.post("/api/deconstruct-dilemma", async (req, res) => {
+  try {
+    const { situation } = req.body;
+    if (!situation) {
+      return res.status(400).json({ error: "Custom situation or stressor text is required." });
+    }
+
+    const ai = getAi();
+    const systemPrompt = `You are an elite Stoic philosopher, behavioral strategist, and cognitive psychologist. You specialize in deconstructing real-life stressor profiles, emotional dilemmas, and complex life queries into actionable stoic vectors using the Dichotomy of Control, Premeditatio Malorum, and Cognitive Reframing. Maintain a sharp, clinical, deeply empowering, and clear tone.`;
+
+    const userPrompt = `Deconstruct the following stressor profile / query:
+"${situation}"
+
+Tasks:
+1. Provide a concise, professional title for this stressor profile.
+2. List 3 specific things that are 100% IN THE USER'S CONTROL regarding this situation.
+3. List 3 specific things that are 100% OUTSIDE THE USER'S CONTROL (external variables to detach from).
+4. Provide a 2-sentence Reframing Directive (cognitive mindset shift).
+5. Provide a 2-sentence Tactical Action Protocol (concrete immediate physical or behavioral steps).
+6. Provide a relevant classical or modern Stoic quote / aphorism (with author attribution).
+7. Provide a comprehensive 3-paragraph solution breakdown in English ("solutionEnglish").
+8. Provide the same solution breakdown translated/adapted into conversational Hinglish ("solutionHinglish").
+9. Provide the same solution breakdown translated/adapted into profound Devanagari Hindi ("solutionHindi").`;
+
+    const result = await ai.models.generateContent({
+      model: "gemini-3.5-flash",
+      contents: userPrompt,
+      config: {
+        systemInstruction: systemPrompt,
+        temperature: 0.8,
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            title: { type: Type.STRING },
+            inControl: { type: Type.ARRAY, items: { type: Type.STRING } },
+            outOfControl: { type: Type.ARRAY, items: { type: Type.STRING } },
+            reframing: { type: Type.STRING },
+            actionDirective: { type: Type.STRING },
+            recommendedQuote: { type: Type.STRING },
+            solutionEnglish: { type: Type.STRING },
+            solutionHinglish: { type: Type.STRING },
+            solutionHindi: { type: Type.STRING },
+          },
+          required: [
+            "title",
+            "inControl",
+            "outOfControl",
+            "reframing",
+            "actionDirective",
+            "recommendedQuote",
+            "solutionEnglish",
+            "solutionHinglish",
+            "solutionHindi",
+          ],
+        },
+      },
+    });
+
+    const parsed = JSON.parse(result.text || "{}");
+    return res.json({
+      success: true,
+      data: {
+        id: `custom-deconstruction-${Date.now()}`,
+        title: parsed.title || "Custom Stressor Profile Analysis",
+        situation,
+        inControl: parsed.inControl || [],
+        outOfControl: parsed.outOfControl || [],
+        reframing: parsed.reframing || "",
+        actionDirective: parsed.actionDirective || "",
+        recommendedQuote: parsed.recommendedQuote || "",
+        solutionEnglish: parsed.solutionEnglish || "",
+        solutionHinglish: parsed.solutionHinglish || "",
+        solutionHindi: parsed.solutionHindi || "",
+      },
+    });
+  } catch (error: any) {
+    console.error("Error in deconstruct-dilemma:", error);
+    return res.status(500).json({ error: error.message || "Failed to deconstruct stressor profile." });
+  }
+});
+
+// 5. Stoic Shield Exercise: Evaluate response detachment score and provide critique
 app.post("/api/analyze-shield", async (req, res) => {
   try {
     const { scenario, userResponse } = req.body;
