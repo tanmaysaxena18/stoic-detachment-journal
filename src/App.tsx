@@ -140,13 +140,13 @@ export default function App() {
 
   // Dynamic Quote updates
   const handleAddQuote = (newQuote: Quote) => {
-    const updated = [...quotes, newQuote];
+    const updated = [newQuote, ...quotes];
     setQuotes(updated);
     localStorage.setItem("detachment_quotes", JSON.stringify(updated));
   };
 
   const handleAddQuotes = (newQuotes: Quote[]) => {
-    const updated = [...quotes, ...newQuotes];
+    const updated = [...newQuotes, ...quotes];
     setQuotes(updated);
     localStorage.setItem("detachment_quotes", JSON.stringify(updated));
   };
@@ -294,4 +294,3 @@ export default function App() {
     </div>
   );
 }
-
